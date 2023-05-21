@@ -1,6 +1,6 @@
 {
-  "name": "ckeditor5-custom-build",
-  "private": true,
+  "name": "ckeditor5-build-floating-editor",
+  "private": false,
   "version": "37.1.0.1",
   "description": "The classic editor build of CKEditor 5 – the best browser-based rich text editor.",
   "keywords": [
