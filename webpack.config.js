@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2014-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -7,99 +7,68 @@
 
 /* eslint-env node */
 
-const path = require( 'path' );
-const webpack = require( 'webpack' );
-const { bundler, styles } = require( '@ckeditor/ckeditor5-dev-utils' );
-const { CKEditorTranslationsPlugin } = require( '@ckeditor/ckeditor5-dev-translations' );
-const TerserWebpackPlugin = require( 'terser-webpack-plugin' );
+const path = require('path');
+const webpack = require('webpack');
+const {bundler, loaders} = require('@ckeditor/ckeditor5-dev-utils');
+const {CKEditorTranslationsPlugin} = require('@ckeditor/ckeditor5-dev-translations');
+const TerserPlugin = require('terser-webpack-plugin');
 
 module.exports = {
-	devtool: 'source-map',
-	performance: { hints: false },
+    devtool: 'source-map',
+    performance: {hints: false},
 
-	entry: path.resolve( __dirname, 'src', 'ckeditor.js' ),
+    entry: path.resolve(__dirname, 'src', 'ckeditor.ts'),
 
-	resolve: {
-		extensions: ['.tsx', '.ts', '.js'],
-	},
+    output: {
+        // The name under which the editor will be exported.
+        library: 'ClassicEditor',
 
-	output: {
-		// The name under which the editor will be exported.
-		library: 'ClassicEditor',
+        path: path.resolve(__dirname, 'build'),
+        filename: 'ckeditor.js',
+        libraryTarget: 'umd',
+        libraryExport: 'default'
+    },
 
-		path: path.resolve( __dirname, 'build' ),
-		filename: 'ckeditor.js',
-		libraryTarget: 'umd',
-		libraryExport: 'default'
-	},
+    optimization: {
+        minimizer: [
+            new TerserPlugin({
+                sourceMap: true,
+                terserOptions: {
+                    output: {
+                        // Preserve CKEditor 5 license comments.
+                        comments: /^!/
+                    }
+                },
+                extractComments: false
+            })
+        ]
+    },
 
-	optimization: {
-		minimizer: [
-			new TerserWebpackPlugin( {
-				sourceMap: true,
-				terserOptions: {
-					output: {
-						// Preserve CKEditor 5 license comments.
-						comments: /^!/
-					}
-				},
-				extractComments: false
-			} )
-		]
-	},
+    plugins: [
+        new CKEditorTranslationsPlugin({
+            // UI language. Language codes follow the https://en.wikipedia.org/wiki/ISO_639-1 format.
+            // When changing the built-in language, remember to also change it in the editor's configuration (src/ckeditor.js).
+            language: 'en',
+            additionalLanguages: 'all'
+        }),
+        new webpack.BannerPlugin({
+            banner: bundler.getLicenseBanner(),
+            raw: true
+        })
+    ],
 
-	plugins: [
-		new CKEditorTranslationsPlugin( {
-			// UI language. Language codes follow the https://en.wikipedia.org/wiki/ISO_639-1 format.
-			// When changing the built-in language, remember to also change it in the editor's configuration (src/ckeditor.js).
-			language: 'vi',
-			additionalLanguages: 'all'
-		} ),
-		new webpack.BannerPlugin( {
-			banner: bundler.getLicenseBanner(),
-			raw: true
-		} )
-	],
+    module: {
+        rules: [
+            loaders.getIconsLoader({matchExtensionOnly: true}),
+            loaders.getStylesLoader({
+                themePath: require.resolve('@ckeditor/ckeditor5-theme-lark'),
+                minify: true
+            }),
+            loaders.getTypeScriptLoader()
+        ]
+    },
 
-	module: {
-		rules: [
-			{
-				test: /\.ts?$/,
-				use: 'ts-loader',
-				exclude: /node_modules/,
-			},
-			{
-				test: /\.svg$/,
-				use: [ 'raw-loader' ]
-			},
-			{
-				test: /\.css$/,
-				use: [
-					{
-						loader: 'style-loader',
-						options: {
-							injectType: 'singletonStyleTag',
-							attributes: {
-								'data-cke': true
-							}
-						}
-					},
-					{
-						loader: 'css-loader'
-					},
-					{
-						loader: 'postcss-loader',
-						options: {
-							postcssOptions: styles.getPostCssConfig( {
-								themeImporter: {
-									themePath: require.resolve( '@ckeditor/ckeditor5-theme-lark' )
-								},
-								minify: true
-							} )
-						}
-					},
-				]
-			}
-		]
-	}
+    resolve: {
+        extensions: ['.ts', '.js', '.json']
+    }
 };
