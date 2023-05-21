@@ -11,7 +11,7 @@ import {
 	ImageStyle,
 	ImageToolbar,
 	ImageUpload,
-	PictureEditing
+	PictureEditing,
 } from "@ckeditor/ckeditor5-image";
 import {Indent, IndentBlock} from "@ckeditor/ckeditor5-indent";
 import {AutoLink, Link, LinkImage} from "@ckeditor/ckeditor5-link";
